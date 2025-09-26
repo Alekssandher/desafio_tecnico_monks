@@ -62,3 +62,4 @@ async def get_metrics(
         "polars_read_time_seconds": polars_time,
         "data_preview": df.to_dicts()
     }
+
