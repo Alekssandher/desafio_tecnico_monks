@@ -17,7 +17,8 @@ dependencies = [
     "passlib[bcrypt] (>=1.7.4,<2.0.0)",
     "python-jose[cryptography] (>=3.5.0,<4.0.0)",
     "python-multipart (>=0.0.20,<0.0.21)",
-    "bcrypt (>=5.0.0,<6.0.0)"
+    "bcrypt (>=5.0.0,<6.0.0)",
+    "scalar-fastapi (>=1.4.2,<2.0.0)"
 ]
 
 

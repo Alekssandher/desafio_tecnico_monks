@@ -3,6 +3,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from typing import Optional
 from datetime import date
+
+from api.dtos.metricFilterParams import MetricsFilterParams, get_metrics_filters
+from api.models.myLoginRequestForm import MyLoginRequestForm
 from .auth.models import Token
 from .auth.services import PasswordAuthenticationService
 from .auth.dependencies import get_current_user
@@ -10,7 +13,23 @@ from .repositories.user_repository import PolarsUserRepository
 from .repositories.metrics_repository import PolarsMetricsRepository
 from .utils.timing import time_function
 
-app = FastAPI()
+from scalar_fastapi import get_scalar_api_reference
+
+app = FastAPI(
+    title="Desafio Técnico Monks - Python API",
+    description="Documentação da API com Scalar",
+    version="1.0.0",
+    openapi_url="/openapi.json"  
+)
+@app.get("/scalar", include_in_schema=False)
+async def scalar_html():
+    return get_scalar_api_reference(
+        openapi_url=app.openapi_url,
+        scalar_proxy_url="https://proxy.scalar.com",
+        
+        
+    )
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 user_repository = PolarsUserRepository()
 auth_service = PasswordAuthenticationService(user_repository, pwd_context)
@@ -21,8 +40,8 @@ async def healthcheck():
     return {"status": "ok"}
 
 @app.post("/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = auth_service.authenticate_user(form_data.username, form_data.password)
+async def login(form_data: MyLoginRequestForm = Depends()):
+    user = auth_service.authenticate_user(form_data.email, form_data.password)
     if not user:
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
     access_token = auth_service.create_access_token(data={"sub": user["email"], "role": user["role"]})
@@ -30,24 +49,15 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @app.get("/metrics")
 async def get_metrics(
-    start_date: Optional[date] = Query(None),
-    end_date: Optional[date] = Query(None),
-    limit: int = Query(100, ge=1, le=1000),
-    offset: int = Query(0, ge=0),
-    order_by: Optional[str] = Query(None, description="Coluna para ordenação"),
-    descending: bool = Query(False, description="True para ordem decrescente"),
+    filters: MetricsFilterParams = Depends(get_metrics_filters),
     current_user: dict = Depends(get_current_user)
 ):
     df, polars_time = time_function(
         metrics_repository.get_metrics,
-        start_date=start_date,
-        end_date=end_date,
-        limit=limit,
-        offset=offset,
-        order_by=order_by,
-        descending=descending,
+        filters,
         user_role=current_user["role"]
     )
+
     return {
         "polars_read_time_seconds": polars_time,
         "data_preview": df.to_dicts()

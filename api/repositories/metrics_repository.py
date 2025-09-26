@@ -3,15 +3,15 @@ from typing import Optional
 from datetime import date
 import polars as pl
 
+from api.dtos.metricFilterParams import MetricsFilterParams
+
 class MetricsRepository(ABC):
     @abstractmethod
-    def get_metrics(self, start_date: Optional[date], end_date: Optional[date], limit: int, offset: int,
-                    order_by: Optional[str], descending: bool, user_role: str) -> pl.DataFrame:
+    def get_metrics(self, filters: MetricsFilterParams, user_role: str) -> pl.DataFrame:
         pass
 
 class PolarsMetricsRepository(MetricsRepository):
-    def get_metrics(self, start_date: Optional[date], end_date: Optional[date], limit: int, offset: int,
-                    order_by: Optional[str], descending: bool, user_role: str) -> pl.DataFrame:
+    def get_metrics(self, filters: MetricsFilterParams, user_role: str) -> pl.DataFrame:
         df = pl.scan_csv("api/data/metrics.csv", try_parse_dates=True, ignore_errors=True)
 
         if user_role != "admin":
@@ -27,12 +27,12 @@ class PolarsMetricsRepository(MetricsRepository):
             pl.col("interactions").cast(pl.Float64, strict=False).fill_null(0.0),
         )
 
-        if start_date:
-            df = df.filter(pl.col("date") >= start_date)
-        if end_date:
-            df = df.filter(pl.col("date") <= end_date)
+        if filters.start_date:
+            df = df.filter(pl.col("date") >= filters.start_date)
+        if filters.end_date:
+            df = df.filter(pl.col("date") <= filters.end_date)
 
-        if order_by and order_by in df.schema.keys():
-            df = df.sort(order_by, descending=descending)
+        if filters.order_by and filters.order_by in df.schema.keys():
+            df = df.sort(filters.order_by, descending=filters.descending)
 
-        return df.slice(offset, limit).collect()
+        return df.slice(filters.offset, filters.limit).collect()
