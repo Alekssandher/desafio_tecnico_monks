@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Métricas - Marketing Digital</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loginScreen" class="login-container">
+        <h1>Login - Dashboard Métricas</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">ENTRAR</button>
+        </form>
+        <div id="loginError" class="error hidden"></div>
+    </div>
+
+    <div id="dashboardScreen" class="container hidden">
+        <div class="user-info">
+            <div>
+                <strong>Usuário:</strong> <span id="userEmail"></span> | 
+                <strong>Perfil:</strong> <span id="userRole"></span>
+            </div>
+            <button id="logoutBtn" class="logout-btn">LOGOUT</button>
+        </div>
+
+        <div class="dashboard-container">
+            <h1>Dashboard de Performance</h1>
+
+            <div class="filters">
+                <div class="form-group">
+                    <label for="startDate">Data Inicial:</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">Data Final:</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="form-group">
+                    <label for="limit">Registros por página:</label>
+                    <select id="limit">
+                        <option value="10" selected>10</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="500">500</option>
+                    </select>
+                </div>
+                <button id="applyFilters">APLICAR FILTROS</button>
+                <button id="clearFilters">LIMPAR FILTROS</button>
+            </div>
+
+            <div id="metricsInfo" class="metrics-info hidden">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalRecords">0</div>
+                    <div class="metric-label">Total de Registros</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="totalClicks">0</div>
+                    <div class="metric-label">Total de Clicks</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="totalImpressions">0</div>
+                    <div class="metric-label">Total de Impressões</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="totalConversions">0</div>
+                    <div class="metric-label">Total de Conversões</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div id="loading" class="loading hidden">Carregando dados...</div>
+                <div id="error" class="error hidden"></div>
+                
+                <table id="dataTable" class="hidden">
+                    <thead>
+                        <tr id="tableHeader"></tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="pagination" class="pagination hidden">
+                <button id="prevPage">← ANTERIOR</button>
+                <span id="pageInfo">Página 1</span>
+                <button id="nextPage">PRÓXIMA →</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

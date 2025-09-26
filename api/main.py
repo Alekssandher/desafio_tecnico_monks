@@ -1,9 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Query
-from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
-from typing import Optional
-from datetime import date
-
+from fastapi.middleware.cors import CORSMiddleware 
 from api.dtos.metricFilterParams import MetricsFilterParams, get_metrics_filters
 from api.models.myLoginRequestForm import MyLoginRequestForm
 from .auth.models import Token
@@ -21,6 +18,15 @@ app = FastAPI(
     version="1.0.0",
     openapi_url="/openapi.json"  
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/scalar", include_in_schema=False)
 async def scalar_html():
     return get_scalar_api_reference(
