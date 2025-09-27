@@ -12,7 +12,7 @@ class MetricsRepository(ABC):
 
 class PolarsMetricsRepository(MetricsRepository):
     def get_metrics(self, filters: MetricsFilterParams, user_role: str) -> pl.DataFrame:
-        df = pl.scan_csv("api/data/metrics.csv", try_parse_dates=True, ignore_errors=True)
+        df = pl.scan_csv("api/data/metrics.csv", try_parse_dates=True, ignore_errors=False)
 
         if user_role != "admin":
             df = df.drop("cost_micros")

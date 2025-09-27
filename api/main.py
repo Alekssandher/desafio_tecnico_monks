@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+import time
+from fastapi import FastAPI, Depends, HTTPException,  Request
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware 
 from api.dtos.metricFilterParams import MetricsFilterParams, get_metrics_filters
@@ -8,7 +9,6 @@ from .auth.services import PasswordAuthenticationService
 from .auth.dependencies import get_current_user
 from .repositories.user_repository import PolarsUserRepository
 from .repositories.metrics_repository import PolarsMetricsRepository
-from .utils.timing import time_function
 
 from scalar_fastapi import get_scalar_api_reference
 
@@ -41,6 +41,19 @@ user_repository = PolarsUserRepository()
 auth_service = PasswordAuthenticationService(user_repository, pwd_context)
 metrics_repository = PolarsMetricsRepository()
 
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    end_time = time.perf_counter()
+    execution_time_ms = (end_time - start_time) * 1000
+    
+    response.headers["X-Process-Time-Ms"] = str(execution_time_ms)
+    
+    print(f"Request to '{request.url.path}' took {execution_time_ms:.4f} ms")
+    
+    return response
+
 @app.get("/healthcheck")
 async def healthcheck():
     return {"status": "ok"}
@@ -58,14 +71,11 @@ async def get_metrics(
     filters: MetricsFilterParams = Depends(get_metrics_filters),
     current_user: dict = Depends(get_current_user)
 ):
-    df, polars_time = time_function(
-        metrics_repository.get_metrics,
-        filters,
-        user_role=current_user["role"]
-    )
+
+    df = metrics_repository.get_metrics(filters, user_role=current_user["role"])
+
 
     return {
-        "polars_read_time_seconds": polars_time,
         "data_preview": df.to_dicts()
     }
 
