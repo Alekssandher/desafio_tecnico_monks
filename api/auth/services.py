@@ -28,7 +28,7 @@ class PasswordAuthenticationService(AuthenticationService):
 
     def authenticate_user(self, email: str, password: str) -> Optional[dict[str, str]]:
         user = self.user_repository.get_user(email)
-        if not user or not password ==  user["password"]:
+        if not user or not self.verify_password(password, user["password"]):
             return None
         return user
 
