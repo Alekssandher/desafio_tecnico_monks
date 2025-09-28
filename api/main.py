@@ -1,16 +1,21 @@
 import time
+from typing import Dict, List
+
 from fastapi import FastAPI, Depends, HTTPException,  Request
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware 
 from api.dtos.metricFilterParams import MetricsFilterParams, get_metrics_filters
 from api.models.myLoginRequestForm import MyLoginRequestForm
+from api.repositories.metrics_db_repository import MySQLMetricsDbRepository
 from .auth.models import Token
 from .auth.services import PasswordAuthenticationService
 from .auth.dependencies import get_current_user
-from .repositories.user_repository import PolarsUserRepository
-from .repositories.metrics_repository import PolarsMetricsRepository
+from .repositories.user_csv_repository import PolarsUserCsvRepository
+from .repositories.metrics_csv_repository import PolarsMetricsCsvRepository
 
 from scalar_fastapi import get_scalar_api_reference
+
+from fastapi.concurrency import run_in_threadpool
 
 app = FastAPI(
     title="Desafio Técnico Monks - Python API",
@@ -18,6 +23,15 @@ app = FastAPI(
     version="1.0.0",
     openapi_url="/openapi.json"  
 )
+
+db_config = {
+    "host": "localhost",
+    "user": "root",
+    "password": "batatinha22",
+    "database": "desafio_monks",
+    "allow_local_infile": True
+}
+metrics_repo = MySQLMetricsDbRepository(db_config=db_config)
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,9 +51,10 @@ async def scalar_html():
     )
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-user_repository = PolarsUserRepository()
-auth_service = PasswordAuthenticationService(user_repository, pwd_context)
-metrics_repository = PolarsMetricsRepository()
+user_csv_repository = PolarsUserCsvRepository()
+auth_service = PasswordAuthenticationService(user_csv_repository, pwd_context)
+metrics_csv_repository = PolarsMetricsCsvRepository()
+
 
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
@@ -66,16 +81,32 @@ async def login(form_data: MyLoginRequestForm = Depends()):
     access_token = auth_service.create_access_token(data={"sub": user["email"], "role": user["role"]})
     return {"token": access_token}
 
-@app.get("/metrics")
-async def get_metrics(
+@app.get("/metrics/csv")
+async def get_metrics_csv(
     filters: MetricsFilterParams = Depends(get_metrics_filters),
     current_user: dict = Depends(get_current_user)
 ):
-
-    df = metrics_repository.get_metrics(filters, user_role=current_user["role"])
-
-
+    """
+    Busca as métricas pelo arquivo csv.
+    """
+    df = await run_in_threadpool(metrics_csv_repository.get_metrics, filters, current_user["role"])
+    
     return {
         "data_preview": df.to_dicts()
     }
 
+
+@app.get("/metrics/db", response_model=List[Dict])
+def get_metrics(
+    filters: MetricsFilterParams = Depends(get_metrics_filters),
+    current_user: str = Depends(get_current_user)
+):
+    """
+    Busca as métricas pelo banco de dados, preenchido com os valores importados do arquivo csv.
+    """
+    try:
+        res = metrics_repo.get_metrics(filters=filters, user_role=current_user['role'])
+        return res
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Something Went Wrong At Our Side.")

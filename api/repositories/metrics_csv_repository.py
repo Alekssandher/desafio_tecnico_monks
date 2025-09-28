@@ -5,12 +5,12 @@ import polars as pl
 
 from api.dtos.metricFilterParams import MetricsFilterParams
 
-class MetricsRepository(ABC):
+class MetricsCsvRepository(ABC):
     @abstractmethod
     def get_metrics(self, filters: MetricsFilterParams, user_role: str) -> pl.DataFrame:
         pass
 
-class PolarsMetricsRepository(MetricsRepository):
+class PolarsMetricsCsvRepository(MetricsCsvRepository):
     def get_metrics(self, filters: MetricsFilterParams, user_role: str) -> pl.DataFrame:
         df = pl.scan_csv("api/data/metrics.csv", try_parse_dates=True, ignore_errors=False)
 

@@ -1,14 +1,14 @@
 from fastapi import Depends, HTTPException
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from ..config.config import Config
-from ..repositories.user_repository import PolarsUserRepository
+from ..repositories.user_csv_repository import PolarsUserCsvRepository
 
 bearer_scheme = HTTPBearer()
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-    user_repository: PolarsUserRepository = Depends(PolarsUserRepository)
+    user_repository: PolarsUserCsvRepository = Depends(PolarsUserCsvRepository)
 ) -> dict:
     token = credentials.credentials  
     try:
