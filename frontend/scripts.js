@@ -117,7 +117,7 @@ class MarketingDashboard {
                         params.append('descending', this.currentSortDesc);
                     }
 
-                    const response = await fetch(`${this.apiUrl}/metrics?${params}`, {
+                    const response = await fetch(`${this.apiUrl}/metrics/csv?${params}`, {
                         headers: {
                             'Authorization': `Bearer ${this.token}`,
                             'Content-Type': 'application/json'
