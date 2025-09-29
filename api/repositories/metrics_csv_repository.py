@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 import polars as pl
 
 from api.dtos.metricFilterParams import MetricsFilterParams

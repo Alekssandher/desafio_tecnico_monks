@@ -71,6 +71,9 @@ def run_seed():
         conn = mysql.connector.connect(**config)
         cursor = conn.cursor()
 
+        # load local file on
+        cursor.execute("SET GLOBAL local_infile = 1;")
+        
         print("Criando tabela metrics")
         for stmt in CREATE_TABLE_QUERY.split(";"):
             if stmt.strip():
@@ -78,6 +81,7 @@ def run_seed():
 
         print("Importando dados do CSV")
         cursor.execute(LOAD_DATA_QUERY)
+       
         rows_imported = cursor.rowcount
         print(f"{rows_imported} registros importados")
 
