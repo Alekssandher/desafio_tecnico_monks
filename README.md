@@ -7,6 +7,7 @@
   - [Usuário Admin](#usuário-admin)
   - [Usuário Comum](#usuário-comum)
 - [Funcionalidades](#funcionalidades)
+- [Decisão de Projeto](#decisão-de-projeto)
 - [🏗️ Arquitetura](#-arquitetura)
   - [Backend (Python)](#backend-python)
   - [Frontend](#frontend)
@@ -50,6 +51,18 @@ Conforme dito, foram feitas alterações no arquivo `users.csv` para que atendes
 - ✅ Paginação de resultados
 - ✅ Dashboard com métricas agregadas
 - ✅ Duas fontes de dados: CSV e MySQL
+
+## Decisão de Projeto
+
+A aplicação expõe dois endpoints para consulta de métricas:
+
+- **/metrics/csv** → lê diretamente do arquivo CSV original, atendendo ao requisito do case.  
+- **/metrics/db** → lê do banco de dados MySQL, que é previamente populado a partir do CSV via seed.  
+
+A ideia de disponibilizar os dois foi:
+- Garantir compatibilidade direta com os arquivos fornecidos no desafio (CSV).  
+- Demonstrar uma abordagem mais próxima do mundo real, utilizando banco de dados para consultas mais performáticas, persistência e escalabilidade.  
+
 
 ## 🏗️ Arquitetura
 
