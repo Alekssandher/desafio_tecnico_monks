@@ -1,3 +1,4 @@
+# script usado para gerar hashs das senhas dos usuários
 from passlib.context import CryptContext
 
 myctx = CryptContext(schemes=["bcrypt"],  deprecated="auto")

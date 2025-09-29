@@ -1,17 +1,18 @@
 import os
 import mysql.connector
+import time
+from pathlib import Path
 
 config = {
-    "host": "localhost",
-    "user": "root",
-    "password": "batatinha22",
-    "database": "desafio_monks",
-    "allow_local_infile": True  
+    "host": os.getenv("DB_URL", "localhost"),
+    "user": os.getenv("DB_USER", "root"),
+    "password": os.getenv("DB_PASSWORD", "batatinha22"),
+    "database": os.getenv("DB_NAME", "desafio_monks"),
+    "allow_local_infile": True
 }
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-CSV_FILE = os.path.join(BASE_DIR, "data", "metrics.csv")
+BASE_DIR = Path(__file__).resolve().parent.parent
+CSV_FILE = str(BASE_DIR / "data" / "metrics.csv")
 
 CREATE_TABLE_QUERY = """
 DROP TABLE IF EXISTS metrics;
@@ -38,35 +39,69 @@ IGNORE 1 LINES
 SET date = STR_TO_DATE(@date, '%Y-%m-%d');
 """
 
-CREATE_INDEXES = f"""
-CREATE INDEX idx_date ON metrics(date);
-CREATE INDEX idx_campaign_id ON metrics(campaign_id);
-"""
+def wait_for_db(max_retries=30, delay=2):
+    """Aguarda o banco de dados ficar disponível"""
+    retries = 0
+    while retries < max_retries:
+        try:
+            conn = mysql.connector.connect(**config)
+            conn.close()
+            print("Banco de dados está pronto!")
+            return True
+        except mysql.connector.Error as e:
+            retries += 1
+            print(f"Aguardando banco de dados: (tentativa {retries}/{max_retries})")
+            time.sleep(delay)
+    
+    print("Erro: Não foi possível conectar ao banco de dados")
+    return False
 
 def run_seed():
-    conn = mysql.connector.connect(**config)
-    cursor = conn.cursor()
 
+    if not os.path.exists(CSV_FILE):
+        print(f"Erro: Arquivo CSV não encontrado em {CSV_FILE}")
+        return
+    
+    print(f"Arquivo CSV encontrado: {CSV_FILE}")
+    
+    if not wait_for_db():
+        return
+    
     try:
+        conn = mysql.connector.connect(**config)
+        cursor = conn.cursor()
+
         print("Criando tabela metrics")
         for stmt in CREATE_TABLE_QUERY.split(";"):
             if stmt.strip():
                 cursor.execute(stmt)
 
-        print("Importando CSV")
+        print("Importando dados do CSV")
         cursor.execute(LOAD_DATA_QUERY)
+        rows_imported = cursor.rowcount
+        print(f"{rows_imported} registros importados")
 
-      
 
         conn.commit()
-        print("Feito")
+        print("\nSeed executado \n")
 
+    except mysql.connector.Error as e:
+        print(f"Erro ao executar seed: {e}")
+        
     except Exception as e:
-        print("Erro ao rodar seed:", e)
+        print(f"Erro inesperado: {e}")
 
     finally:
-        cursor.close()
-        conn.close()
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
 
 if __name__ == "__main__":
+    print("\n=== SEED DO BANCO DE DADOS ===\n")
+    print(f"Host: {config['host']}")
+    print(f"Database: {config['database']}")
+    print(f"User: {config['user']}")
+    print(f"CSV: {CSV_FILE}\n")
+    
     run_seed()
