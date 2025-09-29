@@ -107,6 +107,13 @@ Aguarde alguns instantes para que o banco de dados seja inicializado e o seed se
 
 ### Opção 2: Execução Local (Desenvolvimento)
 
+#### Pré-requisito adicional
+
+Para rodar o projeto localmente sem Docker, é necessário ter o **Poetry** instalado:
+```
+pipx install poetry
+```
+
 #### 1. Configure o Banco de Dados
 ```
 Crie um banco de dados MySql em sua máquina para conexão.
@@ -283,7 +290,7 @@ docker-compose up --build
 
 ## 👨‍💻 Desenvolvedor
 
-Projeto desenvolvido por Alekssandher para o processo seletivo de estágio em engenharia na Monks.
+Projeto desenvolvido por Alekssandher Exaltação para o processo seletivo de estágio em engenharia na Monks.
 
 ---
 
