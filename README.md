@@ -78,7 +78,7 @@ A ideia de disponibilizar os dois foi:
 
 ### Infraestrutura
 - **Containerização**: Docker e Docker Compose
-- **Banco de Dados**: MySQL 8.0
+- **Banco de Dados**: MySQL
 
 ## Como Executar
 
