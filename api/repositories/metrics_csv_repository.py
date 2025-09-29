@@ -1,6 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
-from datetime import date
 import polars as pl
 
 from api.dtos.metricFilterParams import MetricsFilterParams

@@ -16,6 +16,7 @@ from .repositories.metrics_csv_repository import PolarsMetricsCsvRepository
 from scalar_fastapi import get_scalar_api_reference
 
 from fastapi.concurrency import run_in_threadpool
+from .config.config import Config
 
 app = FastAPI(
     title="Desafio Técnico Monks - Python API",
@@ -25,10 +26,10 @@ app = FastAPI(
 )
 
 db_config = {
-    "host": "localhost",
-    "user": "root",
-    "password": "batatinha22",
-    "database": "desafio_monks",
+    "host": Config.DB_URL,
+    "user": Config.DB_USER,
+    "password": Config.DB_PASSWORD,
+    "database": Config.DB_NAME,
     "allow_local_infile": True
 }
 metrics_repo = MySQLMetricsDbRepository(db_config=db_config)
@@ -55,7 +56,7 @@ user_csv_repository = PolarsUserCsvRepository()
 auth_service = PasswordAuthenticationService(user_csv_repository, pwd_context)
 metrics_csv_repository = PolarsMetricsCsvRepository()
 
-
+# middleware para devolver o tempo da requisição no header
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.perf_counter()
@@ -75,6 +76,10 @@ async def healthcheck():
 
 @app.post("/login", response_model=Token)
 async def login(form_data: MyLoginRequestForm = Depends()):
+    """
+    Utiliza as credenciais do arquivo csv para gerar token jwt para login.
+    """
+
     user = auth_service.authenticate_user(form_data.email, form_data.password)
     if not user:
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
@@ -97,7 +102,7 @@ async def get_metrics_csv(
 
 
 @app.get("/metrics/db", response_model=List[Dict])
-def get_metrics(
+def get_metrics_db(
     filters: MetricsFilterParams = Depends(get_metrics_filters),
     current_user: str = Depends(get_current_user)
 ):
