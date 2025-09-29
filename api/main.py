@@ -56,7 +56,6 @@ user_csv_repository = PolarsUserCsvRepository()
 auth_service = PasswordAuthenticationService(user_csv_repository, pwd_context)
 metrics_csv_repository = PolarsMetricsCsvRepository()
 
-# middleware para devolver o tempo da requisição no header
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.perf_counter()
