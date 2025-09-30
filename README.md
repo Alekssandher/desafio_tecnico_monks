@@ -22,8 +22,6 @@
 - [⚡ Performance](#-performance)
 - [🔒 Segurança](#-segurança)
 - [📝 Comandos Úteis](#-comandos-úteis)
-- [🧪 Testando a API](#-testando-a-api)
-- [📦 Dados de Exemplo](#-dados-de-exemplo)
 - [👨‍💻 Desenvolvedor](#-desenvolvedor)
   
 ### Alterações nos dados CSV
@@ -261,31 +259,6 @@ make clean
 
 # Instalar dependências
 make install
-```
-
-## 🧪 Testando a API
-
-```bash
-Entre na url da api ex: localhost:8000/scalar e veja a documentação scalar.
-```
-
-## 📦 Dados de Exemplo
-
-O arquivo `api/data/metrics.csv` contém métricas de campanhas com as seguintes colunas:
-- `date`: Data da métrica
-- `account_id`: ID da conta
-- `campaign_id`: ID da campanha
-- `clicks`: Número de cliques
-- `conversions`: Número de conversões
-- `impressions`: Número de impressões
-- `interactions`: Número de interações
-- `cost_micros`: Custo em micros (visível apenas para admins)
-
-### Erro de permissão no MySQL
-```bash
-# Reinicie os containers
-docker-compose down -v
-docker-compose up --build
 ```
 
 ## 👨‍💻 Desenvolvedor
